@@ -1,0 +1,20 @@
+name: workflow callee
+on:
+  workflow_call:
+    inputs:
+      versions:
+        required: true
+        type: string
+    secrets:
+      docker_username:
+        required: true
+jobs:
+  output_inputs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: echo env
+      run: /usr/bin/env
+    - name: echo inputs
+      run: echo ${{ inputs.versions }}
+
+    
