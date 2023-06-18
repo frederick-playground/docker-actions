@@ -1,0 +1,10 @@
+name: New Manual Dispatch
+on:
+  workflow_dispatch:
+jobs:
+  calling_callee:
+    uses: ./.github/workflows/callee
+    with:
+      versions: "this is version string"
+    secrets:
+      docker_username: "this is docker username"
