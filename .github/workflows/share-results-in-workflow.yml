@@ -7,7 +7,9 @@ jobs:
     steps:
       - id:   date_job
         name: Save Date to Job Output
-        run:  echo "current_date=${date + '%Y-%m-%d'}" >> $GITHUB_OUTPUT
+        shell: bash
+        run:  |
+          echo "current_date=`date + '%Y-%m-%d'`" >> $GITHUB_OUTPUT
 #       - name: Save Date to State
 #         run:  echo "current_date=${date + '%Y-%m-%d'}" >> $GITHUB_STATE
   echo_date_to_console:
