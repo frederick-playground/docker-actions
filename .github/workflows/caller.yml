@@ -1,0 +1,16 @@
+name: Manual Dispatch
+on:
+  workflow_dispatch:
+jobs:
+  calling_callee:
+    name: calling callee
+    runs-on: ubuntu-latest
+    steps:
+      - name: calling callee step
+        # can be use to call workflows in other repos
+        # uses: {org}/{repo}/.github/workflows/{filename}
+        uses: ./.github/workflows/callee
+        with:
+          versions: "this is version string"
+        secrets:
+          docker_username: "this is docker username"
