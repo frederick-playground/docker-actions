@@ -4,6 +4,8 @@ on:
 jobs:
   save_date_to_job_output:
     runs-on: ubuntu-latest
+    outputs:
+      current_date: ${{ steps.date_job.outputs.current_date }}
     steps:
       - id:   date_job
         name: Save Date to Job Output
