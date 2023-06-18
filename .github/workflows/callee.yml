@@ -16,5 +16,6 @@ jobs:
       run: /usr/bin/env
     - name: echo inputs
       run: echo ${{ inputs.versions }}
-
+    - name: echo secrets
+      run: echo ${{ secrets.docker_username }}
     
