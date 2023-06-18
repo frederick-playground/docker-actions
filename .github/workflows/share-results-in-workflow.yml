@@ -1,0 +1,19 @@
+name: Save Shell Output to Env
+on:
+  workflow_dispatch:
+jobs:
+  save_date_to_job_output:
+    runs-on: ubuntu-latest
+    steps:
+      - id:   date_job
+        name: Save Date to Job Output
+        run:  echo "current_date=${date + '%Y-%m-%d'}" >> $GITHUB_OUTPUT
+#       - name: Save Date to State
+#         run:  echo "current_date=${date + '%Y-%m-%d'}" >> $GITHUB_STATE
+  echo_date_to_console:
+    runs-on: ubuntu-latest
+    needs: save_date_to_job_output
+    steps:
+      - name: Echo Job Date to Console
+        run:  echo ${{ needs.save_date_to_job_ouput.outputs.date_job }}
+        
