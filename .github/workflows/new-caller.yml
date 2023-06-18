@@ -6,5 +6,3 @@ jobs:
     uses: ./.github/workflows/callee
     with:
       versions: "this is version string"
-    secrets:
-      docker_username: "this is docker username"
