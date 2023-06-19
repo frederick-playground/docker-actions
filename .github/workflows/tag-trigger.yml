@@ -10,3 +10,7 @@ jobs:
     steps:
       - name: print ref
         run: echo ${{ github.ref }}
+      - name: print ref 2
+        run: echo $GITHUB_REF
+      - name: print head ref
+        run: echo $GITHUB_HEAD_REF
