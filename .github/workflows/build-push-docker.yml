@@ -11,6 +11,9 @@ on:
       platforms:
         type: string
         default: linux/amd64
+      build-date:
+        type: string
+        default: "1999-09-19"
 #       version:
 #         required: true
 #         type: string
@@ -37,7 +40,7 @@ jobs:
         tags: |
           type=semver,pattern={{version}},value=1.2.3
           type=semver,pattern={{major}}.{{minor}},value=1.2.3
-          type=semver,pattern={{version}}-{{date 'YYYYMMDD' tz='America/Los_Angeles'}},value=1.2.3
+          type=semver,pattern={{version}}-{{ $inputs.build-date }},value=1.2.3
     - name: printenv
       run:  printenv
     - name: Set up QEMU
