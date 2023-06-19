@@ -5,6 +5,10 @@ jobs:
   get-latest-tag:
     runs-on: ubuntu-latest
     steps:
+      - name: Output current REF/SHA
+        run: |
+          echo ${{ github.ref }}
+          echo ${{ github.sha }}
       # checkout the current branch (seleted by workflow_dispatch)
       # and fetch all history from the repo, otherwise
       # it will only fetch the last commit and we will not be
