@@ -11,9 +11,9 @@ on:
       platforms:
         type: string
         default: linux/amd64
-      version:
-        required: true
-        type: string
+#       version:
+#         required: true
+#         type: string
 # - need major/minor/patch
 # - need rc true/false
 # - need tag as a string array
@@ -28,6 +28,18 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Docker Meta Data
+      id:   meta
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          frederickwong/sandbox
+        tags: |
+          type=semver,pattern={{version}},value=1.2.3
+          type=semver,pattern={{major}.{minor}},value=1.2.3
+          type=semver,pattern={{version}-{date 'YYYYMMDD' tz='America/Los_Angeles'}},value=1.2.3
+    - name: printenv
+      run:  printenv
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
     - name: Setup Buildx
@@ -44,6 +56,7 @@ jobs:
         push: true
 #        build-args:
         platforms: ${{ inputs.platforms }}
-        tags: |
-          ${{ env.TARGET }}:${{ env.version }}
-          ${{ env.TARGET }}:latest
+        tags: ${{ steps.meta.outputs.tags }}
+#         tags: |
+#           ${{ env.TARGET }}:${{ env.version }}
+#           ${{ env.TARGET }}:latest
