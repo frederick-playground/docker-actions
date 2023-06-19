@@ -16,10 +16,8 @@ jobs:
         run: echo $GITHUB_HEAD_REF
       - name: checkout code
         uses: actions/checkout@v3
-      - name: get the branch name
+      - name: Get SHA
         run: |
-          ls -l
-          echo "base ref ${{github.event.base_ref}}"
-          git log
-          raw=$(git branch -r --contains ${{ github.ref }})
-          env
+          echo ${{ github.ref }}
+          echo ${{ github.sha }}
+          cat ./blah
