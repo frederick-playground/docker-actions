@@ -19,6 +19,6 @@ jobs:
       - name: get the branch name
         run: |
           ls -l
-          git log --all
+          git branch -r --contains ${{github.ref}}
           raw=$(git branch -r --contains ${{ github.ref }})
           env
