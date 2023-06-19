@@ -7,6 +7,7 @@ jobs:
     # setup job's output variable and the values
     outputs:
       current_date: ${{ steps.get_date.outputs.result }}
+      current_time: ${{ env.current_time }}
     steps:
       # step "id" for identifying where to get the output
       - id:   get_date
@@ -18,12 +19,17 @@ jobs:
         run:  |
           echo "result=`date +'%Y-%m-%d'`" >> "$GITHUB_OUTPUT"
       - name: Echo Result within the Same Job
-        run: echo ${{ steps.get_date.outputs.result }}
+        run:  echo ${{ steps.get_date.outputs.result }}
+      - name: Get Time and Save Result to Env
+        run:  echo "current_time=`date +'%T'`" >> "$GITHUB_ENV"
+      - name: Echo Time from Env
+        run:  echo "current time is $current_time"
   show_result:
     runs-on: ubuntu-latest
     # wait until "setup" is completed
     needs: setup
     steps:
-      - name: Echo Result from Previous Job
-        run:  echo "current date is ${{ needs.setup.outputs.current_date }}"
-        
+      - name: Echo Outputs from Previous Job
+        run:  |
+          echo "current date is ${{ needs.setup.outputs.current_date }}"
+          echo "current time is ${{ needs.setup.outputs.current_time }}"
