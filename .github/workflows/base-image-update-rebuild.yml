@@ -5,7 +5,7 @@ on:
 jobs:
   setup:
     outputs:
-      rebuild: fromJSON(${{steps.check-image.outputs.result}})
+      rebuild: ${{steps.check-image.outputs.result == 'false'}}
       tag: ${{steps.get-latest.outputs.latest-tag}}
       sha: ${{steps.get-latest.outputs.latest-sha}}
     runs-on: ubuntu-latest
@@ -19,7 +19,7 @@ jobs:
       # so that we can find the latest tag (if the base image
       # has been updated)
       - name: Checkout 'main'
-        if: fromJSON(${{steps.check-image.outputs.result}})
+        if: ${{steps.check-image.outputs.result == 'false'}}
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -29,7 +29,7 @@ jobs:
       # if the base image has been updated
       - name: Get the Latest Tag from 'main'
         id: get-latest
-        if: fromJSON(${{steps.check-image.outputs.result}})
+        if: ${{steps.check-image.outputs.result == 'false'}}
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0)
           LATEST_SHA=$(git rev-list -n 1 ${LATEST_TAG})
