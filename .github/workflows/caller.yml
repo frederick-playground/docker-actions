@@ -3,12 +3,10 @@ on:
   workflow_dispatch:
 jobs:
   calling_callee:
-#     uses: ./.github/workflows/callee.yml
-    uses: ./.github/workflows/build-push-docker.yml
+    uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
     secrets:
       username: "${{ secrets.DOCKER_USERNAME }}"
       password: "${{ secrets.DOCKER_PASSWORD }}"
-#     with:
-#       versions: "this is version string"
-#     secrets:
-#       docker_username: "this is docker username"
+    with:
+      tag-major: true
+      tag-special-name: true
