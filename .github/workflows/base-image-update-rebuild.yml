@@ -1,7 +1,24 @@
 # Rebuild mainline docker image when base image is updated
+
+# currently, this workflow only rebuild using the latest tag
+# from the "main" branch, but the logic works for all tags.
+# to make it works on any tag, replace "ref: main" in the
+# checkout step with "ref: <commit id>" where the commit id
+# is the one linked by the tag.
 name: Rebuild Mainline on Base Updates
+
 on:
+  # every midnight, check for base image update
+  schedule:
+    - cron: "0 0 * * *"
+
+  # or dispatch the workflow manually
   workflow_dispatch:
+
+  push:
+    tags:
+      - "*"
+
 jobs:
   setup:
     outputs:
@@ -13,21 +30,21 @@ jobs:
       # check whether the base image has been updated
       - name: Check for Base Image Update
         id: "check-image"
-        run: echo "result=true" >> "$GITHUB_OUTPUT"
+        run: echo "result=false" >> "$GITHUB_OUTPUT"
+
+      - name: Triggering Event
+        run: echo ${{ github.event_name }}
 
       # checkout the code from "main" branch with all history
-      # so that we can find the latest tag (if the base image
-      # has been updated)
+      # so that we can find the latest tag
       - name: Checkout 'main'
         if: ${{steps.check-image.outputs.result == 'true'}}
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          #   ref: main
-          ref: 8cab4bc3acac795cfe78bd0c1432f45bc360747f
+          ref: main
 
       # Get the latest tag from the "main" branch
-      # if the base image has been updated
       - name: Get the Latest Tag from 'main'
         id: get-latest
         if: ${{steps.check-image.outputs.result == 'true'}}
@@ -39,7 +56,6 @@ jobs:
   build:
     # workflow call must be a separate job (not in a step)
     # tag and sha are passed from the "setup" job via "outputs"
-    # this job will run if the base image has been updated
     name: Build Docker Image and Push
     needs: setup
     if: ${{needs.setup.outputs.rebuild == 'true'}}
