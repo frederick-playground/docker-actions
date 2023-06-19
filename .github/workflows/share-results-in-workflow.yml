@@ -25,5 +25,5 @@ jobs:
     needs: setup
     steps:
       - name: Echo Result from Previous Job
-        run:  echo "current date: ${{ needs.setup.outputs.current_date }}"
+        run:  echo "current date is ${{ needs.setup.outputs.current_date }}"
         
