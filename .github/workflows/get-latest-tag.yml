@@ -14,11 +14,11 @@ jobs:
       # it will only fetch the last commit and we will not be
       # able to find out the commit sha of the latest tag
       # if there are more than one commit after the latest tag in the
-      # commit path
+      # commit path, and the workflow will fail
       - name: Checkout
         uses: actions/checkout@v3
-        # with:
-        #   fetch-depth: 0
+        with:
+          fetch-depth: 0
       #          ref: main
       - name: Get Latest Tag
         run: |

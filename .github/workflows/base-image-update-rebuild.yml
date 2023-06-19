@@ -1,0 +1,61 @@
+# Rebuild mainline docker image when base image is updated
+name: Rebuild Mainline on Base Updates
+on:
+  workflow_dispatch:
+jobs:
+  setup:
+    outputs:
+      rebuild: ${{steps.check-image.outputs.result}}
+      tag: ${{steps.get-latest.outputs.latest-tag}}
+      sha: ${{steps.get-latest.outputs.latest-sha}}
+    runs-on: ubuntu-latest
+    steps:
+      # check whether the base image has been updated
+      - name: Check for Base Image Update
+        id: "check-image"
+        run: echo "result=false" >> "$GITHUB_OUTPUT"
+
+      # checkout the code from "main" branch with all history
+      # so that we can find the latest tag (if the base image
+      # has been updated)
+      - name: Checkout 'main'
+        if: ${{steps.check-image.outputs.result}}
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: main
+
+      # Get the latest tag from the "main" branch
+      # if the base image has been updated
+      - name: Get the Latest Tag from 'main'
+        id: get-latest
+        if: ${{steps.check-image.outputs.result}}
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          LATEST_SHA=$(git rev-list -n 1 ${LATEST_TAG})
+          echo "latest-tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
+          echo "latest-sha=${LATEST_SHA}" >> "$GITHUB_OUTPUT"
+  build:
+    # workflow call must be a separate job (not in a step)
+    # tag and sha are passed from the "setup" job via "outputs"
+    # this job will run if the base image has been updated
+    name: Build Docker Image and Push
+    needs: setup
+    if: ${{needs.setup.outputs.rebuild}}
+    uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      password: ${{ secrets.DOCKER_PASSWORD }}
+    with:
+      repo-sha: ${{needs.setup.outputs.sha}}
+      org: frederickwong
+      image: sandbox
+      platforms: linux/amd64,linux/arm64
+      semver: ${{needs.setup.outputs.tag}}
+      tag-full-semver: true
+      tag-major-minor: true
+      tag-major: false
+      tag-latest: true
+      tag-build-date: true
+      build-date-tz: America/Los_Angeles
+      tag-special-name: false
