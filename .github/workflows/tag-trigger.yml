@@ -1,0 +1,12 @@
+name: Tag Trigger
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  tag-triggerred:
+    runs-on: ubuntu-latest
+    steps:
+      - name: print ref
+        run: echo ${{ github.ref }}
