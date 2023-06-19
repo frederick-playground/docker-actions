@@ -2,14 +2,29 @@ name: Build and Push to Docker Hub
 on:
   workflow_call:
     inputs:
+      docker_org:
+        type: string
+        default: frederickwong
+      docker_image:
+        type: string
+        default: sandbox
+      platforms:
+        type: string
+        default: linux/amd64
       version:
         required: true
         type: string
+# - need major/minor/patch
+# - need rc true/false
+# - need tag as a string array
+# - need build args
+# - docker username/password should be passed as secret here
+# - how to build if dockerfile is in sub-directory?
 jobs:
   build_and_push:
     runs-on:  ubuntu-latest
     env:
-      TARGET: frederickcwong/test-image
+      TARGET: ${{ inputs.docker_org }}/${{ inputs.docker_image }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -28,7 +43,7 @@ jobs:
         context: .
         push: true
 #        build-args:
-        platforms: linux/amd64
+        platforms: ${{ inputs.platforms }}
         tags: |
           ${{ env.TARGET }}:${{ env.version }}
           ${{ env.TARGET }}:latest
