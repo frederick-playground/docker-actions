@@ -19,6 +19,6 @@ jobs:
       - name: get the branch name
         run: |
           ls -l
-          echo ${{github.event}}
+          echo ${{github.event.base_ref}}
           raw=$(git branch -r --contains ${{ github.ref }})
           env
