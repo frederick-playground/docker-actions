@@ -19,4 +19,4 @@ jobs:
       - name: get the branch name
         run: |
           raw=$(git branch -r --contains ${{ github.ref }})
-          echo $raw
+          echo "${raw}"
