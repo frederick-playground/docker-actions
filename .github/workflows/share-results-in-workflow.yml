@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
 #      current_date: ${{ steps.date_job.outputs.current_date }}
-      current_date: "abcd"
+      output: "abcd"
     steps:
       - id:   date_job
         name: Save Date to Job Output
@@ -24,6 +24,6 @@ jobs:
     steps:
       - name: Echo Job Date to Console
         env:
-          current_date: ${{needs.save_date_to_job_ouput.outputs.current_date}}
+          current_date: ${{needs.save_date_to_job_ouput.outputs.output}}
         run:  printenv
         
