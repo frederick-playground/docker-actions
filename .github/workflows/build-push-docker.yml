@@ -36,8 +36,8 @@ jobs:
           frederickwong/sandbox
         tags: |
           type=semver,pattern={{version}},value=1.2.3
-          type=semver,pattern={{major}.{minor}},value=1.2.3
-          type=semver,pattern={{version}-{date 'YYYYMMDD' tz='America/Los_Angeles'}},value=1.2.3
+          type=semver,pattern={{major}}.{{minor}},value=1.2.3
+          type=semver,pattern={{version}}-{{date 'YYYYMMDD' tz='America/Los_Angeles'}},value=1.2.3
     - name: printenv
       run:  printenv
     - name: Set up QEMU
