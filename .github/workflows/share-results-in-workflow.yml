@@ -1,4 +1,6 @@
-name: Save Shell Output to Env
+# there are 3 ways to share, via GITHUB_ENV, GITHUB_OUTPUT and GITHUB_STATE
+# env is within the job, output is across the jobs, state is not discussed here.
+name: Share Shell Outputs to Jobs/Steps
 on:
   workflow_dispatch:
 jobs:
