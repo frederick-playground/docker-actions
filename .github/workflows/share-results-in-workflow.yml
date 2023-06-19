@@ -22,5 +22,7 @@ jobs:
     needs: save_date_to_job_output
     steps:
       - name: Echo Job Date to Console
-        run:  echo ${{ needs.save_date_to_job_ouput.outputs.date_job }}
+        env:
+          current_date: ${{ needs.save_date_to_job_ouput.outputs.date_job }}
+        run:  echo "$current_date"
         
