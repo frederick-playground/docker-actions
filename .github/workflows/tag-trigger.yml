@@ -20,4 +20,4 @@ jobs:
         run: |
           ls -l
           raw=$(git branch -r --contains ${{ github.ref }})
-          printenv | grep raw
+          env
