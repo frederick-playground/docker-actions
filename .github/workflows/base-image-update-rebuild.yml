@@ -5,7 +5,7 @@ on:
 jobs:
   setup:
     outputs:
-      rebuild: ${{steps.check-image.outputs.result == 'true'}}
+      rebuild: ${{steps.check-image.outputs.result}}
       tag: ${{steps.get-latest.outputs.latest-tag}}
       sha: ${{steps.get-latest.outputs.latest-sha}}
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
     # this job will run if the base image has been updated
     name: Build Docker Image and Push
     needs: setup
-    if: ${{needs.setup.outputs.rebuild}}
+    if: ${{needs.setup.outputs.rebuild == 'true'}}
     uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
