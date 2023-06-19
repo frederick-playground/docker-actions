@@ -24,6 +24,6 @@ jobs:
     steps:
       - name: Echo Job Date to Console
         env:
-          current_date: ${{ needs.save_date_to_job_ouput.outputs.current_date }}
+          current_date: ${{needs.save_date_to_job_ouput.outputs.current_date}}
         run:  printenv
         
