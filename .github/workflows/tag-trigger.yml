@@ -14,3 +14,8 @@ jobs:
         run: echo $GITHUB_REF
       - name: print head ref
         run: echo $GITHUB_HEAD_REF
+      - name: get the branch name
+        run: |
+          raw=$(git branch -r --contains ${{ github.ref }})
+          branch=${raw/origin\/}
+          echo $branch
