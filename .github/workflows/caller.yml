@@ -3,7 +3,8 @@ on:
   workflow_dispatch:
 jobs:
   calling_callee:
-    uses: ./.github/workflows/callee.yml
+#     uses: ./.github/workflows/callee.yml
+    uses: ./.github/workflows/build-push-docker.yml
     with:
       versions: "this is version string"
     secrets:
