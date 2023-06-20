@@ -110,6 +110,11 @@ jobs:
             is_semver=$(isSemver $tag)
             latest=${is_semver}
 
+            echo "p tag ${tag}"
+            echo "p sha ${sha}"
+            echo "p is-semver ${is_semver}"
+            echo "p latest ${latest}"
+
           # workflow dispatch
           #
           # if user did not request "latest", the image will not be tagged with "latest" tag
