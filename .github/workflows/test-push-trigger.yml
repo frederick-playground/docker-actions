@@ -142,10 +142,14 @@ jobs:
           else
             echo "blah"
           fi
-          # echo "sha=${sha}" >> "$GITHUB_OUTPUT"
-          # echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          # echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
-          # echo "latest=${latest}" >> "$GITHUB_OUTPUT"
+          echo "tag ${tag}"
+          echo "sha ${sha}"
+          echo "is-semver ${is_semver}"
+          echo "latest ${latest}"
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
+          echo "latest=${latest}" >> "$GITHUB_OUTPUT"
 
   # build the image with tags based on tag is in semver format or not
   build:
