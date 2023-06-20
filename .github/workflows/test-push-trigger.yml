@@ -18,7 +18,7 @@ name: Push Trigger to Build Image
 on:
   push:
     tags:
-      - "*"
+      - "**"
   workflow_dispatch:
     inputs:
       ref:
