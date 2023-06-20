@@ -26,9 +26,9 @@ jobs:
           is_semver=$([[ $tag =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false')
           echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
 
+  # build the image with tags based on tag is in semver format or not
   build:
     needs: [get-params]
-    if: false
     uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
@@ -39,10 +39,11 @@ jobs:
       image: sandbox
       platforms: linux/amd64,linux/arm64
       semver: ${{needs.get-params.outputs.tag}}
-      tag-full-semver: true
-      tag-major-minor: true
+      tag-full-semver: ${{needs.get-params.outputs.is-semver == 'true'}}
+      tag-major-minor: ${{needs.get-params.outputs.is-semver == 'true'}}
       tag-major: false
-      tag-latest: true
-      tag-build-date: true
+      tag-latest: ${{needs.get-params.outputs.is-semver == 'true'}}
+      tag-build-date: ${{needs.get-params.outputs.is-semver == 'true'}}
       build-date-tz: America/Los_Angeles
-      tag-special-name: false
+      tag-special-name: ${{needs.get-params.outputs.is-semver == 'false'}}
+      special-name: ${{needs.get-params.outputs.tag}}
