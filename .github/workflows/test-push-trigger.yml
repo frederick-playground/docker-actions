@@ -27,9 +27,11 @@ jobs:
   check-base-image:
     runs-on: ubuntu-latest
     outputs:
-      need-update: ${{steps.check.outputs.needs-updating}}
+      # need-update: ${{steps.check.outputs.needs-updating}}
+      need-update: true
     steps:
       - id: check
+        if: false
         uses: lucacome/docker-image-update-checker@v1
         with:
           base-image: library/alpine:latest
