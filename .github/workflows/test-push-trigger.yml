@@ -55,7 +55,6 @@ jobs:
           echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
 
   get-dispatch-params:
-    if: ${{github.event_name == 'workflow_dispatch'}}
     uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
     with:
       ref: ${{inputs.ref}}
