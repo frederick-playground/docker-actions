@@ -1,6 +1,5 @@
 #
 
-# need to check the tag and see if it is d.d.d
 # if d.d.d, build full semver (multi-tag image)
 # otherwise, build special name (single tag image)
 name: Push Trigger to Build Image
@@ -8,9 +7,18 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch name or commit hash (branch selection above is ignored)
+        required: true
+        type: string
+        default: main
+
 jobs:
-  # get the sha and tag from github context
-  get-params:
+  # get the sha and tag from github context (push tag action)
+  get-push-params:
+    if: ${{github.event_name == 'push'}}
     runs-on: ubuntu-latest
     outputs:
       sha: ${{steps.get-params.outputs.sha}}
@@ -25,6 +33,33 @@ jobs:
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           is_semver=$([[ $tag =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false')
           echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
+
+  get-dispatch-params:
+    if: ${{github.event_name == 'workflow_dispatch'}}
+    uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
+    with:
+      ref: ${{inputs.ref}}
+
+  get-params:
+    runs-on: ubuntu-latest
+    needs: [get-push-params, get-dispatch-params]
+    outputs:
+      sha: ${{steps.get-params.outputs.sha}}
+      tag: ${{steps.get-params.outputs.tag}}
+      is-semver: ${{steps.get-params.outputs.is-semver}}
+    steps:
+      - id: get-params
+        run: |
+          if [[ ${{github.event_name == 'push'}} ]]
+          then
+            echo "sha=${{needs.get-push-params.outputs.sha}}" >> "$GITHUB_OUTPUT"
+            echo "tag=${{needs.get-push-params.outputs.tag}}" >> "$GITHUB_OUTPUT"
+            echo "is-semver=${{needs.get-push-params.outputs.is-semver}}" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${{needs.get-dispatch-params.outputs.sha}}" >> "$GITHUB_OUTPUT"
+            echo "tag=${{needs.get-dispatch-params.outputs.tag}}" >> "$GITHUB_OUTPUT"
+            echo "is-semver=false" >> "$GITHUB_OUTPUT"
+          fi
 
   # build the image with tags based on tag is in semver format or not
   build:
