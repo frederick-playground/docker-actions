@@ -3,6 +3,17 @@
 # if d.d.d, build full semver (multi-tag image)
 # otherwise, build special name (single tag image)
 
+# need-alltags - true for building
+#   true
+#     - push tag with tag is major.minor.patch
+#     - schedule with tag is major.minor.patch
+#   false
+#     - push tag with tag is not major.minor.patch
+#     - schedule with tag is not major.minor.patch
+#     - it is a dispatch event
+#
+# schedule - if latest tag is not major.minor.patch, gives warning or skips
+
 name: Push Trigger to Build Image
 on:
   push:
@@ -15,6 +26,11 @@ on:
         required: true
         type: string
         default: main
+      latest:
+        description: Update "latest" tag?
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   # get the sha and tag from github context (push tag action)
@@ -66,38 +82,80 @@ jobs:
       sha: ${{steps.get-params.outputs.sha}}
       tag: ${{steps.get-params.outputs.tag}}
       is-semver: ${{steps.get-params.outputs.is-semver}}
+      latest: ${{steps.get-params.outputs.latest}}
     steps:
       - id: get-params
+        shell: bash
         run: |
-          if [[ ${{github.event_name == 'push'}} ]]
-          then
-            echo "sha=${{needs.get-push-params.outputs.sha}}" >> "$GITHUB_OUTPUT"
-            echo "tag=${{needs.get-push-params.outputs.tag}}" >> "$GITHUB_OUTPUT"
-            echo "is-semver=${{needs.get-push-params.outputs.is-semver}}" >> "$GITHUB_OUTPUT"
+          function isSemver() {
+            [[ $tag =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false'
+          }
+
+          # push tag
+          #
+          # if tag is in semver format, assume it is a release of the latest version
+          # it is too time consuming to check if the tag is the latest semver
+          # hence assume latest should be updated
+          # otherwise, assume it is a branch tag push, and only the tag is added
+          # to the docker image and not updating the latest
+          #
+          # docker image tags:
+          #   - "major.minor.patch-YYYY-MM-DD" (semver)
+          #   - "latest" (semver)
+          #   - "tag" (not semver)
+          if [[ ${{github.event_name == 'push'}} ]]; then
+
+            tag="${{needs.get-push-params.outputs.tag}}"
+            sha="${{needs.get-push-params.outputs.sha}}"
+            is_semver=$(isSemver $tag)
+            latest=${is_semver}
+
+          # workflow dispatch
+          #
+          # if user did not request "latest", the image will not be tagged with "latest" tag
+          # if user requested "latest", the image will be tagged only if the tag is in semver format
+          #
+          # docker image tags:
+          #   - "major.minor.patch-YYYY-MM-DD" (semver)
+          #   - "latest" (semver && latest requested)
+          #   - "tag" (not semver)
+          elif [[ ${{github.event_name == 'workflow_dispatch' }}]]; then
+
+            tag="${{needs.get-dispatch-params.outputs.tag}}"
+            sha="${{needs.get-dispatch-params.outputs.sha}}"
+            is_semver=$(isSemver $tag)
+            latest=$([[ ${{inputs.latest}} && ($is_semver == 'true') ]] && echo 'true' || echo 'false')
+
+          # schedule
+          #
+          # its purpose is to update the base image periodically and it is intended for the "latest" release
+          # therefore, if the latest tag in the mainline is a semver, build and update the latest tag
+          # otherwise, it should skip / generate error
+          #
+          # docker image tags:
+          #   - "major.minor.patch-YYYY-MM-DD" (semver)
+          #   - "latest" (semver)
           else
-            echo "sha=${{needs.get-dispatch-params.outputs.sha}}" >> "$GITHUB_OUTPUT"
-            echo "tag=${{needs.get-dispatch-params.outputs.tag}}" >> "$GITHUB_OUTPUT"
-            echo "is-semver=false" >> "$GITHUB_OUTPUT"
+
           fi
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
+          echo "latest=${latest}" >> "$GITHUB_OUTPUT"
 
   # build the image with tags based on tag is in semver format or not
   build:
     needs: [get-params]
-    uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
+    uses: ./.github/workflows/build.yml
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       password: ${{ secrets.DOCKER_PASSWORD }}
     with:
-      repo-sha: ${{needs.get-params.outputs.sha}}
+      ref: ${{needs.get-params.outputs.sha}}
       org: frederickwong
       image: sandbox
       platforms: linux/amd64,linux/arm64
-      semver: ${{needs.get-params.outputs.tag}}
-      tag-full-semver: ${{needs.get-params.outputs.is-semver == 'true'}}
-      tag-major-minor: ${{needs.get-params.outputs.is-semver == 'true'}}
-      tag-major: false
-      tag-latest: ${{needs.get-params.outputs.is-semver == 'true'}}
-      tag-build-date: ${{needs.get-params.outputs.is-semver == 'true'}}
+      base-tag: ${{needs.get-params.outputs.tag}}
+      need-build-date: ${{needs.get-params.outputs.is-semver}}
       build-date-tz: America/Los_Angeles
-      tag-special-name: ${{needs.get-params.outputs.is-semver == 'false'}}
-      special-name: ${{needs.get-params.outputs.tag}}
+      need-latest: ${{needs.get-params.outputs.latest}}
