@@ -1,0 +1,35 @@
+# xxx: need to update the build script and change special name usage
+
+# "dispatch" will use whatever tag to do the build, and attach the tag directly to the image
+
+name: Test Dispatch Trigger
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        default: main
+jobs:
+  get-latest:
+    uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
+    with:
+      ref: ${{inputs.ref}}
+
+  build:
+    needs: [get-latest]
+    uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      password: ${{ secrets.DOCKER_PASSWORD }}
+    with:
+      repo-sha: ${{needs.get-latest.outputs.sha}}
+      org: frederickwong
+      image: sandbox
+      platforms: linux/amd64,linux/arm64
+      tag-full-semver: false
+      tag-major-minor: false
+      tag-major: false
+      tag-latest: false
+      tag-build-date: false
+      tag-special-name: true
+      special-name: ${{needs.get-latest.outputs.tag}}

@@ -1,0 +1,49 @@
+# "schedule" always build the image from the "main" using the latest tag
+
+# xxx: what happen if there is no tag in the "main" branch?
+name: Rebuild Image if Base Image Updated
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  check-image:
+    runs-on: ubuntu-latest
+    outputs:
+      #   need-update: ${{steps.check.outputs.needs-updating}}
+      need-update: "false"
+    steps:
+      - name: check if base image has changed
+        id: check
+        uses: lucacome/docker-image-update-checker@v1
+        with:
+          base-image: library/alpine:latest
+          image: frederickwong/sandbox:latest
+
+  get-latest:
+    needs: [check-image]
+    if: ${{needs.check-image.outputs.need-update == 'true'}}
+    uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
+    with:
+      ref: "main"
+
+  build:
+    needs: [check-image, get-latest]
+    if: ${{needs.check-image.outputs.need-update == 'true'}}
+    uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      password: ${{ secrets.DOCKER_PASSWORD }}
+    with:
+      repo-sha: ${{needs.get-latest.outputs.sha}}
+      org: frederickwong
+      image: sandbox
+      platforms: linux/amd64,linux/arm64
+      semver: ${{needs.get-latest.outputs.tag}}
+      tag-full-semver: true
+      tag-major-minor: true
+      tag-major: false
+      tag-latest: true
+      tag-build-date: true
+      build-date-tz: America/Los_Angeles
+      tag-special-name: false

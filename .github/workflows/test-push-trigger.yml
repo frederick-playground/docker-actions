@@ -1,0 +1,43 @@
+#
+
+# need to check the tag and see if it is d.d.d
+# if d.d.d, build full semver (multi-tag image)
+# otherwise, build special name (single tag image)
+name: Push Trigger to Build Image
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  # get the sha and tag from github context
+  get-params:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{steps.get-push-param.outputs.tag}}
+      sha: ${{github.sha}}
+    steps:
+      - id: get-push-param
+        name: Get Push Tag Params
+        run: |
+          tag=$(echo ${github.ref} | awk -F/ '{print $3}')
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: [get-params]
+    uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      password: ${{ secrets.DOCKER_PASSWORD }}
+    with:
+      repo-sha: ${{needs.get-latest.outputs.sha}}
+      org: frederickwong
+      image: sandbox
+      platforms: linux/amd64,linux/arm64
+      semver: ${{needs.get-latest.outputs.tag}}
+      tag-full-semver: true
+      tag-major-minor: true
+      tag-major: false
+      tag-latest: true
+      tag-build-date: true
+      build-date-tz: America/Los_Angeles
+      tag-special-name: false
