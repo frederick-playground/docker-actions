@@ -142,7 +142,7 @@ jobs:
             sha="${{needs.get-dispatch-params.outputs.sha}}"
             is_semver=$(isSemver $tag)
             latest=$([[ ${{inputs.latest}} == 'true' && ($is_semver == 'true') ]] && echo 'true' || echo 'false')
-            need-building='true'
+            need-building="true"
 
           # schedule
           #
