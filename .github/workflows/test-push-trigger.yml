@@ -21,7 +21,7 @@ on:
         type: boolean
         default: false
   schedule:
-    - cron: "45 22 * * *"
+    - cron: "0 23 * * *"
 
 jobs:
   # get the sha and tag from github context (push tag action)
