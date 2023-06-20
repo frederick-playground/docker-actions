@@ -8,12 +8,18 @@ on:
         default: main
 jobs:
   test-get-latest-tag:
+    if: |
+      inputs.ref == 'new-branch' ||
+      inputs.ref == 'test'
     uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
     with:
       ref: ${{inputs.ref}}
   echo-result:
     runs-on: ubuntu-latest
     needs: [test-get-latest-tag]
+    if: |
+      inputs.ref == 'new-branch' ||
+      inputs.ref == 'test'
     steps:
       - name: Echo Result
         run: |
