@@ -15,7 +15,7 @@ jobs:
         id: check
         uses: lucacome/docker-image-update-checker@v1
         with:
-          base-image: library/alpine:latest
+          base-image: library/alpine:3.18.2
           image: frederickwong/sandbox:latest
       - run: |
           echo "need-updating: ${{steps.check.outputs.needs-updating}}"
