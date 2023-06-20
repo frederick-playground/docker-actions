@@ -5,7 +5,6 @@ on:
       ref:
         type: string
         description: "Branch/Commit ID"
-        default: main
 jobs:
   test-get-latest-tag:
     uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
