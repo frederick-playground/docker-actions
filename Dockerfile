@@ -1,4 +1,4 @@
-from alpine:latest
+from alpine:3.18.0
 
 copy test.sh /test.sh
 
