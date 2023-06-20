@@ -110,11 +110,6 @@ jobs:
             is_semver=$(isSemver $tag)
             latest=${is_semver}
 
-            echo "p tag ${tag}"
-            echo "p sha ${sha}"
-            echo "p is-semver ${is_semver}"
-            echo "p latest ${latest}"
-
           # workflow dispatch
           #
           # if user did not request "latest", the image will not be tagged with "latest" tag
@@ -129,12 +124,7 @@ jobs:
             tag="${{needs.get-dispatch-params.outputs.tag}}"
             sha="${{needs.get-dispatch-params.outputs.sha}}"
             is_semver=$(isSemver $tag)
-            latest=$([[ ${{inputs.latest}} && ($is_semver == 'true') ]] && echo 'true' || echo 'false')
-
-            echo "in tag ${tag}"
-            echo "in sha ${sha}"
-            echo "in is-semver ${is_semver}"
-            echo "in latest ${latest}"
+            latest=$([[ ${{inputs.latest}} == 'true' && ($is_semver == 'true') ]] && echo 'true' || echo 'false')
 
           # schedule
           #
