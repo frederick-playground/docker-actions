@@ -1,0 +1,21 @@
+name: Test Get Latest Tag
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        description: "Branch/Commit ID"
+        default: main
+jobs:
+  test-get-latest-tag:
+    uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
+    with:
+      ref: "main"
+  echo-result:
+    runs-on: ubuntu-latest
+    needs: [test-get-latest-tag]
+    steps:
+      - name: Echo Result
+        run: |
+          echo "tag: ${{needs.test-get-latest-tag.outputs.tag}}"
+          echo "sha: ${{needs.test-get-latest-tag.outputs.sha}}"

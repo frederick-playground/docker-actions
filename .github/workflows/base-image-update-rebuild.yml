@@ -1,10 +1,14 @@
 # Rebuild mainline docker image when base image is updated
-
-# currently, this workflow only rebuild using the latest tag
-# from the "main" branch, but the logic works for all tags.
-# to make it works on any tag, replace "ref: main" in the
-# checkout step with "ref: <commit id>" where the commit id
-# is the one linked by the tag.
+#
+# push new tags
+# - a build will be triggered using the tag's commit
+#
+# workflow_dispatch / schedule triggers
+# - currently, this workflow only rebuild using the latest tag
+# - from the "main" branch, but the logic works for all tags.
+# - to make it works on any tag, replace "ref: main" in the
+# - checkout step with "ref: <commit id>" where the commit id
+# - is the one linked by the tag.
 name: Rebuild Mainline on Base Updates
 
 on:
@@ -15,6 +19,7 @@ on:
   # or dispatch the workflow manually
   workflow_dispatch:
 
+  # or push a new tag
   push:
     tags:
       - "*"
@@ -22,9 +27,7 @@ on:
 jobs:
   setup:
     outputs:
-      rebuild: ${{steps.check-image.outputs.result}}
-      tag: ${{steps.get-latest.outputs.latest-tag}}
-      sha: ${{steps.get-latest.outputs.latest-sha}}
+      build: ${{steps.run-status.outputs.result}}
     runs-on: ubuntu-latest
     steps:
       # check whether the base image has been updated
@@ -32,43 +35,49 @@ jobs:
         id: "check-image"
         run: echo "result=false" >> "$GITHUB_OUTPUT"
 
-      - name: Triggering Event
-        run: echo ${{ github.event_name }}
-
-      # checkout the code from "main" branch with all history
-      # so that we can find the latest tag
-      - name: Checkout 'main'
-        if: ${{steps.check-image.outputs.result == 'true'}}
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: main
-
-      # Get the latest tag from the "main" branch
-      - name: Get the Latest Tag from 'main'
-        id: get-latest
-        if: ${{steps.check-image.outputs.result == 'true'}}
+      # determine if image build should be continue or not
+      # if manual triggered & base image updated, then yes
+      # if scheduler triggered & base image updated, then yes
+      # if tag pushed, then yes because of a new tag
+      # otherwise no
+      - name: Determine Run Status
+        id: run-status
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-          LATEST_SHA=$(git rev-list -n 1 ${LATEST_TAG})
-          echo "latest-tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
-          echo "latest-sha=${LATEST_SHA}" >> "$GITHUB_OUTPUT"
+          trigger=${{github.event_name}}
+          updated=${{steps.check-image.outputs.result}}
+          if [[ ((($trigger = "workflow_dispatch") || \
+                  ($trigger = "schedule")) && \
+                 ($updated = "true")) || \
+                ($trigger = "push") ]]
+          then
+            echo "result=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  get-latest-tag:
+    name: Get Latest Tag
+    needs: setup
+    uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
+    with:
+      ref: "main"
+
   build:
     # workflow call must be a separate job (not in a step)
     # tag and sha are passed from the "setup" job via "outputs"
     name: Build Docker Image and Push
-    needs: setup
-    if: ${{needs.setup.outputs.rebuild == 'true'}}
+    needs: [setup, get-latest-tag]
+    if: ${{needs.setup.outputs.build == 'true'}}
     uses: frederickcwong/.github/.github/workflows/docker-build-push.yml@main
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       password: ${{ secrets.DOCKER_PASSWORD }}
     with:
-      repo-sha: ${{needs.setup.outputs.sha}}
+      repo-sha: ${{needs.get-latest-tag.outputs.sha}}
       org: frederickwong
       image: sandbox
       platforms: linux/amd64,linux/arm64
-      semver: ${{needs.setup.outputs.tag}}
+      semver: ${{needs.get-latest-tag.outputs.tag}}
       tag-full-semver: true
       tag-major-minor: true
       tag-major: false
