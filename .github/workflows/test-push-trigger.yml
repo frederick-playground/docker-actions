@@ -136,7 +136,7 @@ jobs:
           #   - "major.minor.patch-YYYY-MM-DD" (semver)
           #   - "latest" (semver)
           else
-
+            echo "blah"
           fi
           echo "sha=${sha}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
