@@ -29,11 +29,11 @@ jobs:
       username: ${{ secrets.DOCKER_USERNAME }}
       password: ${{ secrets.DOCKER_PASSWORD }}
     with:
-      repo-sha: ${{needs.get-latest.outputs.sha}}
+      repo-sha: ${{needs.get-params.outputs.sha}}
       org: frederickwong
       image: sandbox
       platforms: linux/amd64,linux/arm64
-      semver: ${{needs.get-latest.outputs.tag}}
+      semver: ${{needs.get-params.outputs.tag}}
       tag-full-semver: true
       tag-major-minor: true
       tag-major: false
