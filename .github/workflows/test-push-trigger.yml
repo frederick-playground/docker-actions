@@ -156,6 +156,6 @@ jobs:
       image: sandbox
       platforms: linux/amd64,linux/arm64
       base-tag: ${{needs.get-params.outputs.tag}}
-      need-build-date: ${{needs.get-params.outputs.is-semver}}
+      need-build-date: ${{needs.get-params.outputs.is-semver == 'true'}}
       build-date-tz: America/Los_Angeles
-      need-latest: ${{needs.get-params.outputs.latest}}
+      need-latest: ${{needs.get-params.outputs.latest == 'true'}}
