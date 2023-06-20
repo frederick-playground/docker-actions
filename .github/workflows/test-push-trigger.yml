@@ -103,7 +103,7 @@ jobs:
           #   - "major.minor.patch-YYYY-MM-DD" (semver)
           #   - "latest" (semver)
           #   - "tag" (not semver)
-          if [[ ${{github.event_name == 'push'}} ]]; then
+          if [[ ${{github.event_name}}  == 'push' ]]; then
 
             tag="${{needs.get-push-params.outputs.tag}}"
             sha="${{needs.get-push-params.outputs.sha}}"
@@ -124,16 +124,12 @@ jobs:
           #   - "major.minor.patch-YYYY-MM-DD" (semver)
           #   - "latest" (semver && latest requested)
           #   - "tag" (not semver)
-          elif [[ ${{github.event_name == 'workflow_dispatch' }} ]]; then
+          elif [[ ${{github.event_name}} == 'workflow_dispatch' ]]; then
 
             tag="${{needs.get-dispatch-params.outputs.tag}}"
             sha="${{needs.get-dispatch-params.outputs.sha}}"
             is_semver=$(isSemver $tag)
             latest=$([[ ${{inputs.latest}} && ($is_semver == 'true') ]] && echo 'true' || echo 'false')
-            echo "sha=${sha}" >> "$GITHUB_OUTPUT"
-            echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-            echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
-            echo "latest=${latest}" >> "$GITHUB_OUTPUT"
 
             echo "in tag ${tag}"
             echo "in sha ${sha}"
