@@ -125,6 +125,10 @@ jobs:
             sha="${{needs.get-dispatch-params.outputs.sha}}"
             is_semver=$(isSemver $tag)
             latest=$([[ ${{inputs.latest}} && ($is_semver == 'true') ]] && echo 'true' || echo 'false')
+            echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+            echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+            echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
+            echo "latest=${latest}" >> "$GITHUB_OUTPUT"
 
           # schedule
           #
@@ -138,14 +142,15 @@ jobs:
           else
             echo "blah"
           fi
-          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
-          echo "latest=${latest}" >> "$GITHUB_OUTPUT"
+          # echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          # echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          # echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
+          # echo "latest=${latest}" >> "$GITHUB_OUTPUT"
 
   # build the image with tags based on tag is in semver format or not
   build:
     needs: [get-params]
+    if: false
     uses: ./.github/workflows/build.yml
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
