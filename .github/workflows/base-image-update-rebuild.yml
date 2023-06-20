@@ -59,6 +59,8 @@ jobs:
     name: Get Latest Tag
     needs: setup
     uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
+    if: |
+
     with:
       ref: "main"
 
