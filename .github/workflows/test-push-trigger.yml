@@ -19,7 +19,6 @@ on:
 jobs:
   # get the sha and tag from github context (push tag action)
   get-push-params:
-    if: ${{github.event_name == 'push'}}
     runs-on: ubuntu-latest
     outputs:
       sha: ${{steps.get-params.outputs.sha}}
