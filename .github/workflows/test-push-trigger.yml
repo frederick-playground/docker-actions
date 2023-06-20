@@ -119,7 +119,7 @@ jobs:
           #   - "major.minor.patch-YYYY-MM-DD" (semver)
           #   - "latest" (semver && latest requested)
           #   - "tag" (not semver)
-          elif [[ ${{github.event_name == 'workflow_dispatch' }}]]; then
+          elif [[ ${{github.event_name == 'workflow_dispatch' }} ]]; then
 
             tag="${{needs.get-dispatch-params.outputs.tag}}"
             sha="${{needs.get-dispatch-params.outputs.sha}}"
