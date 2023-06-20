@@ -150,7 +150,6 @@ jobs:
   # build the image with tags based on tag is in semver format or not
   build:
     needs: [get-params]
-    if: false
     uses: ./.github/workflows/build.yml
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
