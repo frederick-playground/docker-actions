@@ -4,7 +4,7 @@
 name: Rebuild Image if Base Image Updated
 on:
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 16 * * *"
 
 jobs:
   check-image:
