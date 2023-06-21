@@ -161,7 +161,7 @@ jobs:
 
           m_title="Build: ${{github.event.repository.name}}@${tag}"
 
-          IFS='' read -r -d '' m_body <<"EOF"
+          m_body=$(cat <<EOF
           event-type:    ${{github.event_name}}
           need-building: ${need_building}
           tag:           ${tag}
@@ -169,6 +169,7 @@ jobs:
           is-semver:     ${is_semver}
           need-latest:   ${latest}
           EOF
+          )
 
           if [[${{github.event_name}} == 'schedule' && $is_semver == 'false']]; then
             m_title="${m_title} - WARNING!"
