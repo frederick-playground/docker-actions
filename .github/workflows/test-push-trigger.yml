@@ -1,4 +1,3 @@
-# xxx - need to generate error if "schedule" & "is-semver" is false
 # xxx - need to validate the tag for docker image tag
 #       "valid ASCII and can contain lowercase and uppercase letters,
 #        digits, underscores, periods, and hyphens. It cannot start
@@ -20,8 +19,8 @@ on:
         required: true
         type: boolean
         default: false
-  # schedule:
-  #   - cron: "*/15 * * * *"
+  schedule:
+    - cron: "0 10 * * *"
 
 jobs:
   check-base-image:
