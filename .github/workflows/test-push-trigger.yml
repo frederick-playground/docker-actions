@@ -158,16 +158,20 @@ jobs:
             latest=$([[ $is_semver == 'true' ]] && echo 'true' || echo 'false')
             need_building=$([[ ${{needs.check-base-image.outputs.need-update}} == 'true' && $is_semver == 'true' ]] && echo 'true' || echo 'false')
           fi
-          echo "tag ${tag}"
-          echo "sha ${sha}"
-          echo "is-semver ${is_semver}"
-          echo "latest ${latest}"
           echo "need-building ${need_building}"
           echo "sha=${sha}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
           echo "need-building=${need_building}" >> "$GITHUB_OUTPUT"
+          echo "error=blah" >> "$GITHUB_OUTPUT"
+
+      - if: steps.get-params.outputs.error
+        uses: containrrr/shoutrrr-action@v1
+        with:
+          url: ${{ secrets.SHOUTRRR_URL }}
+          title: Error
+          message: ${{steps.get-params.outputs.error}}
 
   # build the image with tags based on tag is in semver format or not
   build:
