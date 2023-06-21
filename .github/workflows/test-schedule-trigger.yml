@@ -35,7 +35,7 @@ jobs:
           # insert '_' to tag starts with '.'
           # replace all non-valid characters with '-'
           # and limit number of characters to 128
-          result=$(echo ${{inputs.tag}} | sed               \
+          result=$(echo '${{inputs.tag}}' | sed               \
             -e 's/^$/${{inputs.no-tag}}/'                   \
             -e 's/^\(\-\)/${{inputs.start-dot}}\1/'         \
             -e 's/^\(\.\)/${{inputs.start-hyphen}}\1/'      \
