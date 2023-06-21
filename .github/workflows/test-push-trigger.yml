@@ -193,7 +193,7 @@ jobs:
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
           echo "need-building=${need_building}" >> "$GITHUB_OUTPUT"
           echo "shoutrrr-title=$m_title" >> "$GITHUB_OUTPUT"
-          echo "shoutrrr-body=$m_body" >> "$GITHUB_ENV"
+          echo "shoutrrr-body=$m_body" >> "$GITHUB_OUTPUT"
 
       - uses: containrrr/shoutrrr-action@v1
         with:
