@@ -13,9 +13,9 @@ jobs:
         run: |
           tag='-abc-def'
           tag=$(echo $tag | sed \
-            -e 's/^$/no-tag/' \
-            -e 's/^\(\-\)/_\1/' \
-            -e 's/^\(\.\)/_\1/' \
-            -e 's/[^a-zA-Z0-9\-_\.]/-/g' \
+            -e 's/^$/no-tag/'            \  # empty tag
+            -e 's/^\(\-\)/_\1/'          \  # starts with '-'
+            -e 's/^\(\.\)/_\1/'          \  # starts with '.'
+            -e 's/[^a-zA-Z0-9\-_\.]/-/g' \  # valid chars only
           )
           echo $tag
