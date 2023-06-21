@@ -20,8 +20,8 @@ on:
         required: true
         type: boolean
         default: false
-  schedule:
-    - cron: "*/15 * * * *"
+  # schedule:
+  #   - cron: "*/15 * * * *"
 
 jobs:
   check-base-image:
