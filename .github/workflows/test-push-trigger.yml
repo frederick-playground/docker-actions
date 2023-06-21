@@ -176,9 +176,13 @@ jobs:
 
           # github action does not accept multiline string as
           # output. replaces %, \n, \r characters
+          # https://trstringer.com/github-actions-multiline-strings/
+
           m_body="${m_body//'%'/'%25'}"
           m_body="${m_body//$'\n'/'%0A'}"
           m_body="${m_body//$'\r'/'%0D'}"
+
+          echo "${m_body}"
 
           echo "title=${m_title}"
           echo "body=${m_body}"
