@@ -4,18 +4,41 @@
 name: Test Regex
 on:
   workflow_dispatch:
-
+    inputs:
+      tag:
+        type: string
+        required: true
+      no-tag:
+        type: string
+        required: true
+        default: "no-tag"
+      start-hyphen:
+        type: string
+        required: true
+        default: "_"
+      start-dot:
+        type: string
+        required: true
+        default: "_"
+      bad-char:
+        type: string
+        required: true
+        default: "-"
 jobs:
   check-image:
     runs-on: ubuntu-latest
     steps:
       - shell: bash
         run: |
-          tag='-abc-def'
-          tag=$(echo $tag | sed \
-            -e 's/^$/no-tag/'            \  # empty tag
-            -e 's/^\(\-\)/_\1/'          \  # starts with '-'
-            -e 's/^\(\.\)/_\1/'          \  # starts with '.'
-            -e 's/[^a-zA-Z0-9\-_\.]/-/g' \  # valid chars only
-          )
-          echo $tag
+          # replace empty tag with 'no-tag'
+          # insert '_' to tag starts with '-'
+          # insert '_' to tag starts with '.'
+          # replace all non-valid characters with '-'
+          # and limit number of characters to 128
+          result=$(echo ${{inputs.tag}} | sed               \
+            -e 's/^$/${{inputs.no-tag}}/'                   \
+            -e 's/^\(\-\)/${{inputs.start-dot}}\1/'         \
+            -e 's/^\(\.\)/${{inputs.start-hyphen}}\1/'      \
+            -e 's/[^a-zA-Z0-9\-_\.]/${{inputs.bad-char}}/g' \
+            | cut -c 1-128)
+          echo $result
