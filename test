@@ -1,0 +1,7 @@
+GITHUB_SHA=69fa22e9048a1023a038aa3d088f8facaa2d1815
+GITHUB_REF_NAME=b"b
+GITHUB_REPOSITORY=frederick-playground/docker-actions
+GITHUB_WORKFLOW=Tag Name
+GITHUB_EVENT_NAME=push
+GITHUB_REF=refs/tags/b"b
+GITHUB_REF_TYPE=tag

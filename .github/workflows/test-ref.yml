@@ -12,8 +12,9 @@ jobs:
       - id: blah
         run: |
           echo 'sha=${{github.sha}}' >> "$GITHUB_OUTPUT"
-          echo 'tag=${{github.ref_name}}' >> "$GITHUB_OUTPUT"
-          is_semver=$([[ '${{github.ref_name}}' =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false')
+          tag=${GITHUB_REF_NAME//\'/\\\'}
+          echo $'tag=${tag}' >> "$GITHUB_OUTPUT"
+          is_semver=$([[ $'${tag}' =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false')
           echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
           printenv
           echo $github
