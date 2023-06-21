@@ -146,7 +146,7 @@ jobs:
           #
           # its purpose is to update the base image periodically and it is intended for the "latest" release
           # therefore, if the latest tag in the mainline is a semver, build and update the latest tag
-          # otherwise, it should skip / generate error
+          # otherwise, it should skip the latest tag
           #
           # docker image tags:
           #   - "major.minor.patch-YYYY-MM-DD" (semver)
@@ -158,20 +158,32 @@ jobs:
             latest=$([[ $is_semver == 'true' ]] && echo 'true' || echo 'false')
             need_building=$([[ ${{needs.check-base-image.outputs.need-update}} == 'true' && $is_semver == 'true' ]] && echo 'true' || echo 'false')
           fi
-          echo "need-building ${need_building}"
+
+          m_title="Build: ${{github.event.repository.name}}@${tag}"
+          m_body="event-type:    ${{github.event_name}}
+          need-building: ${need_building}
+          tag:           ${tag}
+          sha:           ${sha}
+          is-semver:     ${is_semver}
+          need-latest:   ${latest}"
+
+          if [[${{github.event_name}} == 'schedule' && $is_semver == 'false']]; then
+            m_title="${m_title} - WARNING!"
+          fi
+
           echo "sha=${sha}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
           echo "need-building=${need_building}" >> "$GITHUB_OUTPUT"
-          echo "error=blah" >> "$GITHUB_OUTPUT"
+          echo "shoutrrr-title=$m_title" >> "$GITHUB_OUTPUT"
+          echo "shoutrrr-body=$m_body" >> "$GITHUB_OUTPUT"
 
-      - if: steps.get-params.outputs.error
-        uses: containrrr/shoutrrr-action@v1
+      - uses: containrrr/shoutrrr-action@v1
         with:
           url: ${{ secrets.SHOUTRRR_URL }}
-          title: Error
-          message: ${{steps.get-params.outputs.error}}
+          title: ${{steps.get-params.outputs.shoutrrr-title}}
+          message: ${{steps.get-params.outputs.shoutrrr-body}}
 
   # build the image with tags based on tag is in semver format or not
   build:
