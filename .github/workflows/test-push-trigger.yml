@@ -160,6 +160,9 @@ jobs:
           fi
 
           m_title="Build: ${{github.event.repository.name}}@${tag}"
+          if [[${{github.event_name}} == 'schedule' && $is_semver == 'false']]; then
+            m_title="${m_title} - WARNING!"
+          fi
 
           m_body=$(cat <<EOF
           event-type:    ${{github.event_name}}
@@ -171,9 +174,9 @@ jobs:
           EOF
           )
 
-          if [[${{github.event_name}} == 'schedule' && $is_semver == 'false']]; then
-            m_title="${m_title} - WARNING!"
-          fi
+          m_body="${m_body//'%'/'%25'}"
+          m_body="${m_body//$'\n'/'%0A'}"
+          m_body="${m_body//$'\r'/'%0D'}"
 
           echo "title=${m_title}"
           echo "body=${m_body}"
@@ -184,7 +187,7 @@ jobs:
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
           echo "need-building=${need_building}" >> "$GITHUB_OUTPUT"
           echo "shoutrrr-title=$m_title" >> "$GITHUB_OUTPUT"
-          echo "shoutrrr-body=$m_body" >> "$GITHUB_OUTPUT"
+          echo "shoutrrr-body=$m_body" >> "$GITHUB_ENV"
 
       - uses: containrrr/shoutrrr-action@v1
         with:
