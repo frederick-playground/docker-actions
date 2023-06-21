@@ -160,12 +160,15 @@ jobs:
           fi
 
           m_title="Build: ${{github.event.repository.name}}@${tag}"
-          m_body="event-type:    ${{github.event_name}}
+
+          IFS='' read -r -d '' m_body <<"EOF"
+          event-type:    ${{github.event_name}}
           need-building: ${need_building}
           tag:           ${tag}
           sha:           ${sha}
           is-semver:     ${is_semver}
-          need-latest:   ${latest}"
+          need-latest:   ${latest}
+          EOF
 
           if [[${{github.event_name}} == 'schedule' && $is_semver == 'false']]; then
             m_title="${m_title} - WARNING!"
