@@ -2,6 +2,8 @@
 #       "valid ASCII and can contain lowercase and uppercase letters,
 #        digits, underscores, periods, and hyphens. It cannot start
 #        with a period or hyphen and must be no longer than 128 characters"
+
+# IMPORTANT - do not use single quote for tag/branch/repo names. it will break the (bash) code
 name: Push Trigger to Build Image
 on:
   push:
@@ -50,10 +52,9 @@ jobs:
         # are required values in every action. I just needed to ignore them
         # if the event is not a push
         run: |
-          echo "sha=${{github.sha}}" >> "$GITHUB_OUTPUT"
-          tag=$(echo "${{github.ref}}" | awk -F/ '{print $3}')
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          is_semver=$([[ $tag =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false')
+          echo 'sha=${{github.sha}}' >> "$GITHUB_OUTPUT"
+          echo 'tag=${{github.ref_name}}' >> "$GITHUB_OUTPUT"
+          is_semver=$([[ '${{github.ref_name}}' =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false')
           echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
 
   get-dispatch-params:

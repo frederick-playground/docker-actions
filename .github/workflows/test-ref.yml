@@ -6,6 +6,12 @@ on:
 jobs:
   tag-name:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{steps.blah.outputs.tag}}
     steps:
-      - run: |
-          echo '${{github.ref_name}}'
+      - id: blah
+        run: |
+          echo 'sha=${{github.sha}}' >> "$GITHUB_OUTPUT"
+          echo 'tag=${{github.ref_name}}' >> "$GITHUB_OUTPUT"
+          is_semver=$([[ '${{github.ref_name}}' =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false')
+          echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
