@@ -4,6 +4,12 @@
 #        with a period or hyphen and must be no longer than 128 characters"
 
 # IMPORTANT - do not use single quote for tag/branch/repo names. it will break the (bash) code
+
+# there are two ways to get the tag
+# - get it from $github.ref_name if it is a push tag event
+# - get it using the commit ID with command "git describe --tags --abbrev=0" (latest tag)
+#
+# both can be stored
 name: Push Trigger to Build Image
 on:
   push:
