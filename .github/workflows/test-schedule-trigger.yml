@@ -1,21 +1,21 @@
 # "schedule" always build the image from the "main" using the latest tag
 
 # xxx: what happen if there is no tag in the "main" branch?
-name: Rebuild Image if Base Image Updated
+name: Test Regex
 on:
   workflow_dispatch:
 
 jobs:
   check-image:
     runs-on: ubuntu-latest
-    outputs:
-      need-update: ${{steps.check.outputs.needs-updating}}
     steps:
-      - name: check if base image has changed
-        id: check
-        uses: lucacome/docker-image-update-checker@v1
-        with:
-          base-image: library/alpine:3.18.2
-          image: frederickwong/sandbox:latest
-      - run: |
-          echo "need-updating: ${{steps.check.outputs.needs-updating}}"
+      - shell: bash
+        run: |
+          tag='-abc-def'
+          tag=$(echo $tag | sed \
+            -e 's/^$/no-tag/' \
+            -e 's/^\(\-\)/_\1/' \
+            -e 's/^\(\.\)/_\1/' \
+            -e 's/[^a-zA-Z0-9\-_\.]/-/g' \
+          )
+          echo $tag
