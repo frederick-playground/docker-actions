@@ -178,9 +178,9 @@ jobs:
           # output. replaces %, \n, \r characters
           # https://trstringer.com/github-actions-multiline-strings/
 
-          m_body="${m_body//'%'/'%25'}"
-          m_body="${m_body//$'\n'/'%0A'}"
-          m_body="${m_body//$'\r'/'%0D'}"
+          # m_body="${m_body//'%'/'%25'}"
+          # m_body="${m_body//$'\n'/'%0A'}"
+          # m_body="${m_body//$'\r'/'%0D'}"
 
           echo "${m_body}"
 
@@ -193,13 +193,16 @@ jobs:
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
           echo "need-building=${need_building}" >> "$GITHUB_OUTPUT"
           echo "shoutrrr-title=$m_title" >> "$GITHUB_OUTPUT"
-          echo "shoutrrr-body=$m_body" >> "$GITHUB_OUTPUT"
+
+          echo "shoutrrr_body<<EOF" >> "$GITHUB_ENV"
+          echo "$m_body" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
 
       - uses: containrrr/shoutrrr-action@v1
         with:
           url: ${{ secrets.SHOUTRRR_URL }}
           title: ${{steps.get-params.outputs.shoutrrr-title}}
-          message: ${{steps.get-params.outputs.shoutrrr-body}}
+          message: ${{env.shoutrrr_body}}
 
   # build the image with tags based on tag is in semver format or not
   build:
