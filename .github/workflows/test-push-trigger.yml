@@ -139,8 +139,8 @@ jobs:
 
             sha='${{needs.get-push-params.outputs.sha}}'
             tag='${{needs.get-push-params.outputs.tag}}'
-            tag=${sanitizeTag $tag}
-            is_release=${isRelease $tag}
+            tag=$(sanitizeTag $tag)
+            is_release=$(isRelease $tag)
             latest=${is_release}
             build_image='true'
 
@@ -157,7 +157,7 @@ jobs:
 
             sha='${{needs.get-dispatch-params.outputs.sha}}'
             tag='${{needs.get-dispatch-params.outputs.tag}}'
-            tag=${sanitizeTag $tag}
+            tag=$(sanitizeTag $tag)
             is_release=$(isRelease $tag)
             latest=$([[ '${{inputs.latest}}' == 'true' && ($is_release == 'true') ]] && echo 'true' || echo 'false')
             build_image="true"
@@ -175,7 +175,7 @@ jobs:
 
             sha='${{needs.get-schedule-params.outputs.sha}}'
             tag='${{needs.get-schedule-params.outputs.tag}}'
-            tag=${sanitizeTag $tag}
+            tag=$(sanitizeTag $tag)
             is_release=$(isRelease $tag)
             latest=$([[ $is_release == 'true' ]] && echo 'true' || echo 'false')
             build_image=$([[ '${{needs.check-base-image.outputs.need-update}}' == 'true' \
