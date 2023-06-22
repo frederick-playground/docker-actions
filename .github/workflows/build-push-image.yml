@@ -1,43 +1,29 @@
 # - build single image with multiple tags
-# - this is a reuseable workflow
 #
 # secrets input
 # - username         docker login username
 # - password         docker login token (under docker repo security setting)
 #
 # inputs
-# - repo-sha         the commit sha for repo checkout (see notes)
+# - ref              the commit sha
 # - org              docker repo org name
 # - image            docker repo image name
 # - platforms        what platforms to build? comma-separated list
-# - semver           semantic version, e.g. "0.1.0"
-# - tag-full-semer   add full version tag? e.g. "0.1.0"
-# - tag-major-minor  add major.minor version tag? e.g. "0.1"
-# - tag-major        add major version tag? e.g. "0"
-# - tag-latest       add "latest" tag?
-# - tag-build-date   add build date tag? e.g. "0.1.0-2023-01-01"
+# - base-tag         tag to be used with docker image
+# - need-latest      add "latest" tag?
+# - need-build-date  add build date to tag? e.g. "<base-tag>-YYYY-MM-DD"
 # - build-date-tz    use TZ to determinte the build date
-# - tag-special-name add tag with special name? (see special-name)
-# - special-name     create tag "0.1.0-alpha"
 
 # Notes
-# - repo-sha: the commit ID/SHA will be used for checkout the repo
-#             the build will be based on the commit (not a branch)
-#             because the current HEAD of the branch may be ahead
-#             of the commit for the build.
-#             Use ${github.sha} if the triggering event is tag
-#             push event (given the tag is the one for the build).
-#             It might work with other tiggers like PR, Releases,
-#             etc. Check Github doc to find out.
-#             On scheduled action events, checkout the branch
-#             (with fetch-depth: 0), and find the commit ID from
-#             various git commands using shell commands.
-#             It is default to "main" because action/checkout@v3
-#             accepts branch name as well, which will checkout
-#             the latest commit from the "main" branch
+# - ref: the commit ID/SHA will be used for checkout the repo
+#        the build will be based on the commit (not a branch)
+#        because the current HEAD of the branch may be ahead
+#        of the commit for the build.
+#        It is default to "main" because action/checkout@v3
+#        accepts branch name as well, which will checkout
+#        the latest commit from the "main" branch
 
 # xxx: need build args
-# xxx: need to check input values
 # xxx: build context? what if dockerfile is not at root directory?
 name: Docker Build & Push
 on:
@@ -60,7 +46,6 @@ on:
       platforms:
         type: string
         default: linux/amd64,linux/arm64
-
       base-tag:
         type: string
         default: "default"
@@ -78,10 +63,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Get the build date (if needed)
+      # Get the build date
       - id: get-date
         name: Get Build Date
-        if: ${{ inputs.need-build-date }}
         env:
           TZ: ${{ inputs.build-date-tz }}
         run: echo "result=`date +'%Y-%m-%d'`" >> "$GITHUB_OUTPUT"

@@ -1,9 +1,10 @@
-# xxx - need to validate the tag for docker image tag
-#       "valid ASCII and can contain lowercase and uppercase letters,
-#        digits, underscores, periods, and hyphens. It cannot start
-#        with a period or hyphen and must be no longer than 128 characters"
-
-# IMPORTANT - do not use single quote for tag/branch/repo names. it will break the (bash) code
+# IMPORTANT - do not use quote for tag/branch/repo names. it will break the (bash and yaml) code.
+# just stick to valid docker image tag (a-z A-Z 0-9 - . _) and backslash /.
+# although we can get the tag with quotes and manupilate it in shell using variables,
+# it wont work across jobs because in order to reference output from another job (like from a reusable
+# workflow), it must be done via "needs.<job-id>" or "needs.<step-id>". These are not variables in the
+# shell. They are replaced with the actual text content before the script is executed, similar to
+# typing the content on the command line which will cause a lot of issues when the script is executed.
 
 # there are two ways to get the tag
 # - get it from $github.ref_name if it is a push tag event
@@ -49,7 +50,6 @@ jobs:
     outputs:
       sha: ${{steps.get-params.outputs.sha}}
       tag: ${{steps.get-params.outputs.tag}}
-      is-semver: ${{steps.get-params.outputs.is-semver}}
     steps:
       - id: get-params
         name: Get Push Tag Params
@@ -59,15 +59,13 @@ jobs:
         # if the event is not a push
         shell: bash
         run: |
-          echo 'sha=${GITHUB_SHA}' >> "$GITHUB_OUTPUT"
-          echo 'tag=${GITHUB_REF_NAME}' >> "$GITHUB_OUTPUT"
-          is_semver=$([[ '${GITHUB_REF_NAME}' =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false')
-          echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
+          echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
   get-dispatch-params:
     uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
     with:
-      ref: ${{inputs.ref}}
+      ref: "${{inputs.ref}}"
 
   get-schedule-params:
     uses: frederickcwong/.github/.github/workflows/get-latest-tag.yml@main
@@ -101,36 +99,50 @@ jobs:
     outputs:
       sha: ${{steps.get-params.outputs.sha}}
       tag: ${{steps.get-params.outputs.tag}}
-      is-semver: ${{steps.get-params.outputs.is-semver}}
+      is-release: ${{steps.get-params.outputs.is-release}}
       latest: ${{steps.get-params.outputs.latest}}
-      need-building: ${{steps.get-params.outputs.need-building}}
+      build-image: ${{steps.get-params.outputs.build-image}}
     steps:
       - id: get-params
         shell: bash
         run: |
-          function isSemver() {
-            [[ $tag =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false'
+          function isRelease() {
+            [[ $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo 'true' || echo 'false'
+          }
+
+          # sanitize git tag to satisfy docker requirements
+          function sanitizeTag() {
+            # replace empty tag with 'no-tag'
+            # insert '_' to tag that starts with '-'
+            # insert '_' to tag that starts with '.'
+            # replace all non-valid characters with '-'
+            # and limit number of characters to 128
+            result=$(echo $1 | sed         \
+              -e 's/^$/no-tag/'            \
+              -e 's/^\(\-\)/_\1/'          \
+              -e 's/^\(\.\)/_\1/'          \
+              -e 's/[^a-zA-Z0-9\-_\.]/-/g' \
+            | cut -c 1-128)
+            echo $result
           }
 
           # push tag
           #
-          # if tag is in semver format, assume it is a release of the latest version
-          # it is too time consuming to check if the tag is the latest semver
-          # hence assume latest should be updated
-          # otherwise, assume it is a branch tag push, and only the tag is added
-          # to the docker image and not updating the latest
+          # assume tag push event is always a release event if the tag is in
+          # semver format, which will also tag the image with latest tag
           #
           # docker image tags:
-          #   - "major.minor.patch-YYYY-MM-DD" (semver)
-          #   - "latest" (semver)
-          #   - "tag" (not semver)
-          if [[ ${{github.event_name}}  == 'push' ]]; then
+          #   - "<tag>-YYYY-MM-DD" (semver format)
+          #   - "latest" (semver format)
+          #   - "<tag>" (not semver format)
+          if [[ ${GITHUB_EVENT_NAME}  == 'push' ]]; then
 
-            tag="${{needs.get-push-params.outputs.tag}}"
-            sha="${{needs.get-push-params.outputs.sha}}"
-            is_semver=$(isSemver $tag)
-            latest=${is_semver}
-            need_building='true'
+            sha='${{needs.get-push-params.outputs.sha}}'
+            tag='${{needs.get-push-params.outputs.tag}}'
+            tag=${sanitizeTag $tag}
+            is_release=${isRelease $tag}
+            latest=${is_release}
+            build_image='true'
 
           # workflow dispatch
           #
@@ -141,13 +153,14 @@ jobs:
           #   - "major.minor.patch-YYYY-MM-DD" (semver)
           #   - "latest" (semver && latest requested)
           #   - "tag" (not semver)
-          elif [[ ${{github.event_name}} == 'workflow_dispatch' ]]; then
+          elif [[ ${GITHUB_EVENT_NAME} == 'workflow_dispatch' ]]; then
 
-            tag="${{needs.get-dispatch-params.outputs.tag}}"
-            sha="${{needs.get-dispatch-params.outputs.sha}}"
-            is_semver=$(isSemver $tag)
-            latest=$([[ ${{inputs.latest}} == 'true' && ($is_semver == 'true') ]] && echo 'true' || echo 'false')
-            need_building="true"
+            sha='${{needs.get-dispatch-params.outputs.sha}}'
+            tag='${{needs.get-dispatch-params.outputs.tag}}'
+            tag=${sanitizeTag $tag}
+            is_release=$(isRelease $tag)
+            latest=$([[ '${{inputs.latest}}' == 'true' && ($is_release == 'true') ]] && echo 'true' || echo 'false')
+            build_image="true"
 
           # schedule
           #
@@ -159,31 +172,34 @@ jobs:
           #   - "major.minor.patch-YYYY-MM-DD" (semver)
           #   - "latest" (semver)
           else
-            tag="${{needs.get-schedule-params.outputs.tag}}"
-            sha="${{needs.get-schedule-params.outputs.sha}}"
-            is_semver=$(isSemver $tag)
-            latest=$([[ $is_semver == 'true' ]] && echo 'true' || echo 'false')
-            need_building=$([[ ${{needs.check-base-image.outputs.need-update}} == 'true' && $is_semver == 'true' ]] && echo 'true' || echo 'false')
+
+            sha='${{needs.get-schedule-params.outputs.sha}}'
+            tag='${{needs.get-schedule-params.outputs.tag}}'
+            tag=${sanitizeTag $tag}
+            is_release=$(isRelease $tag)
+            latest=$([[ $is_release == 'true' ]] && echo 'true' || echo 'false')
+            build_image=$([[ '${{needs.check-base-image.outputs.need-update}}' == 'true' \
+              && $is_release == 'true' ]] && echo 'true' || echo 'false')
           fi
 
-          m_title="Build: ${{github.repository}}@${tag}"
-          if [[${{github.event_name}} == 'schedule' && $is_semver == 'false']]; then
-            m_title="${m_title} - WARNING!"
-          fi
+          m_title="Build: ${GITHUB_REPOSITORY}@${tag}"
 
           m_body=$(cat <<EOF
-          event-type:    ${{github.event_name}}
-          need-building: ${need_building}
+          event-type:    ${GITHUB_EVENT_NAME}
+          build-image:   ${build_image}
           tag:           ${tag}
           sha:           ${sha}
-          is-semver:     ${is_semver}
+          is-release:    ${is_release}
           need-latest:   ${latest}
           EOF
           )
+          if [[ ${GITHUB_EVENT_NAME} == 'schedule' && ${is_release} == 'false']]; then
+            m_body="${m_body}\n - WARNING: Schedule event encountered a non-semver tag!"
+          fi
 
           echo "sha=${sha}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          echo "is-semver=${is_semver}" >> "$GITHUB_OUTPUT"
+          echo "is-release=${is_release}" >> "$GITHUB_OUTPUT"
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
           echo "need-building=${need_building}" >> "$GITHUB_OUTPUT"
           echo "shoutrrr-title=$m_title" >> "$GITHUB_OUTPUT"
@@ -193,6 +209,7 @@ jobs:
           echo "$m_body" >> "$GITHUB_ENV"
           echo "EOF" >> "$GITHUB_ENV"
 
+      # xxx - need to test if shoutrrr url is available, otherwise skip the step
       - uses: containrrr/shoutrrr-action@v1
         with:
           url: ${{ secrets.SHOUTRRR_URL }}
@@ -202,8 +219,8 @@ jobs:
   # build the image with tags based on tag is in semver format or not
   build:
     needs: [get-params]
-    if: ${{needs.get-params.outputs.need-building == 'true'}}
-    uses: ./.github/workflows/build.yml
+    if: ${{needs.get-params.outputs.build-image == 'true'}}
+    uses: ./.github/workflows/build-push-image.yml
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       password: ${{ secrets.DOCKER_PASSWORD }}
@@ -214,5 +231,5 @@ jobs:
       platforms: linux/amd64,linux/arm64
       base-tag: ${{needs.get-params.outputs.tag}}
       need-latest: ${{needs.get-params.outputs.latest == 'true'}}
-      need-build-date: ${{needs.get-params.outputs.is-semver == 'true'}}
+      need-build-date: ${{needs.get-params.outputs.is-release == 'true'}}
       build-date-tz: America/Los_Angeles
