@@ -6,11 +6,7 @@
 # shell. They are replaced with the actual text content before the script is executed, similar to
 # typing the content on the command line which will cause a lot of issues when the script is executed.
 
-# there are two ways to get the tag
-# - get it from $github.ref_name if it is a push tag event
-# - get it using the commit ID with command "git describe --tags --abbrev=0" (latest tag)
-#
-# both can be stored
+# xxx - need to test if shoutrrr url is available, otherwise skip the step
 name: Push Trigger to Build Image
 on:
   push:
@@ -28,8 +24,9 @@ on:
         required: true
         type: boolean
         default: false
+  # 10am UTC is 2/3am PT
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "0 10 * * *"
 
 jobs:
   check-base-image:
@@ -212,7 +209,6 @@ jobs:
           echo "$m_body" >> "$GITHUB_ENV"
           echo "EOF" >> "$GITHUB_ENV"
 
-      # xxx - need to test if shoutrrr url is available, otherwise skip the step
       - uses: containrrr/shoutrrr-action@v1
         with:
           url: ${{ secrets.SHOUTRRR_URL }}
