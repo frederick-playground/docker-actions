@@ -193,7 +193,7 @@ jobs:
           need-latest:   ${latest}
           EOF
           )
-          if [[ ${GITHUB_EVENT_NAME} == 'schedule' && ${is_release} == 'false']]; then
+          if [[ ${GITHUB_EVENT_NAME} == 'schedule' && ${is_release} == 'false' ]]; then
             m_body="${m_body}\n - WARNING: Schedule event encountered a non-semver tag!"
           fi
 
