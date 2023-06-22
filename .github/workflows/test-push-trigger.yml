@@ -201,7 +201,7 @@ jobs:
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "is-release=${is_release}" >> "$GITHUB_OUTPUT"
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
-          echo "need-building=${need_building}" >> "$GITHUB_OUTPUT"
+          echo "build-image=${build-image}" >> "$GITHUB_OUTPUT"
           echo "shoutrrr-title=$m_title" >> "$GITHUB_OUTPUT"
 
           # output does not accept multi-line string, use env instead
