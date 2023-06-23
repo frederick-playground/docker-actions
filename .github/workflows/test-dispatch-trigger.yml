@@ -24,3 +24,6 @@ jobs:
         VERSION=1.2.3
         STUFF=abc
       base-tag: 4.0.0
+      labels: |
+        maintainer=Frederick Wong
+        whatever=blah
